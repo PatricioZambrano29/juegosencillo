@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>El Ahorcado 🎮</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ===================== PANTALLA: REGISTRO ===================== -->
+  <div id="screen-register" class="screen active">
+    <div class="register-card">
+      <div class="logo-title">
+        <span class="skull">💀</span>
+        <h1>El Ahorcado</h1>
+        <span class="skull">💀</span>
+      </div>
+      <p class="subtitle">¡Adivina la palabra antes de que sea tarde!</p>
+      <div class="form-group">
+        <label for="username">Nombre de jugador</label>
+        <input type="text" id="username" maxlength="20" placeholder="Escribe tu nombre..." autocomplete="off" />
+      </div>
+      <div class="form-group">
+        <label for="avatar">Elige tu avatar</label>
+        <div class="avatar-grid" id="avatar-grid">
+          <span class="avatar-opt selected" data-val="🧑">🧑</span>
+          <span class="avatar-opt" data-val="👩">👩</span>
+          <span class="avatar-opt" data-val="🧔">🧔</span>
+          <span class="avatar-opt" data-val="👨‍💻">👨‍💻</span>
+          <span class="avatar-opt" data-val="🧙">🧙</span>
+          <span class="avatar-opt" data-val="🤖">🤖</span>
+          <span class="avatar-opt" data-val="🦸">🦸</span>
+          <span class="avatar-opt" data-val="🧛">🧛</span>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="btn-register">¡Comenzar!</button>
+      <button class="btn btn-ghost" id="btn-view-scores">🏆 Ver Historial</button>
+    </div>
+  </div>
+
+  <!-- ===================== PANTALLA: MENÚ PRINCIPAL ===================== -->
+  <div id="screen-menu" class="screen">
+    <div class="menu-card">
+      <div class="player-info" id="player-info-menu"></div>
+      <h2>Selecciona Modo de Juego</h2>
+
+      <div class="mode-section">
+        <h3>Dificultad</h3>
+        <div class="btn-group">
+          <button class="btn btn-level active" data-level="easy">🟢 Fácil</button>
+          <button class="btn btn-level" data-level="medium">🟡 Medio</button>
+          <button class="btn btn-level" data-level="hard">🔴 Difícil</button>
+        </div>
+      </div>
+
+      <div class="mode-section">
+        <h3>Modo de Juego</h3>
+        <div class="mode-cards">
+          <div class="mode-card" id="mode-solo" data-mode="solo">
+            <span class="mode-icon">🧑</span>
+            <span class="mode-label">Un Jugador</span>
+            <span class="mode-desc">Adivina palabras de la máquina</span>
+          </div>
+          <div class="mode-card" id="mode-vs" data-mode="vs">
+            <span class="mode-icon">🆚</span>
+            <span class="mode-label">Versus Máquina</span>
+            <span class="mode-desc">Tú pones la palabra, la máquina adivina</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="mode-section">
+        <h3>Categoría</h3>
+        <select id="category-select" class="select-input">
+          <option value="general">🌐 General</option>
+          <option value="animals">🐾 Animales</option>
+          <option value="countries">🌍 Países</option>
+          <option value="fruits">🍎 Frutas</option>
+          <option value="tech">💻 Tecnología</option>
+        </select>
+      </div>
+
+      <button class="btn btn-primary" id="btn-start-game">🎮 ¡Jugar!</button>
+      <button class="btn btn-ghost" id="btn-back-register">← Cambiar jugador</button>
+    </div>
+  </div>
+
+  <!-- ===================== PANTALLA: MODO VS - INGRESAR PALABRA ===================== -->
+  <div id="screen-vs-input" class="screen">
+    <div class="menu-card">
+      <h2>🆚 Modo Versus</h2>
+      <p class="subtitle">Ingresa la palabra que la máquina debe adivinar</p>
+      <div class="form-group">
+        <label for="vs-word-input">Palabra secreta</label>
+        <input type="password" id="vs-word-input" maxlength="20" placeholder="Solo letras, sin tildes..." autocomplete="off" />
+        <small id="vs-word-error" class="error-msg"></small>
+      </div>
+      <div class="form-group">
+        <label for="vs-hint-input">Pista (opcional)</label>
+        <input type="text" id="vs-hint-input" maxlength="60" placeholder="Ej: Es un animal doméstico..." autocomplete="off" />
+      </div>
+      <button class="btn btn-primary" id="btn-vs-start">⚔️ ¡Que la máquina adivine!</button>
+      <button class="btn btn-ghost" id="btn-vs-back">← Volver</button>
+    </div>
+  </div>
+
+  <!-- ===================== PANTALLA: JUEGO ===================== -->
+  <div id="screen-game" class="screen">
+    <div class="game-layout">
+
+      <!-- Panel izquierdo: ahorcado -->
+      <div class="game-left">
+        <div class="game-header">
+          <div class="player-badge" id="game-player-badge"></div>
+          <div class="game-stats">
+            <span id="stat-score">⭐ 0</span>
+            <span id="stat-level"></span>
+            <span id="stat-category"></span>
+          </div>
+        </div>
+
+        <div class="hangman-container">
+          <svg id="hangman-svg" viewBox="0 0 200 250" xmlns="http://www.w3.org/2000/svg">
+            <!-- Estructura base (siempre visible) -->
+            <line x1="20" y1="230" x2="180" y2="230" class="gallows" />
+            <line x1="60" y1="230" x2="60" y2="20" class="gallows" />
+            <line x1="60" y1="20" x2="130" y2="20" class="gallows" />
+            <line x1="130" y1="20" x2="130" y2="45" class="gallows" />
+            <!-- Partes del cuerpo (ocultas inicialmente) -->
+            <circle id="h-head" cx="130" cy="60" r="16" class="body-part hidden" />
+            <line id="h-body" x1="130" y1="76" x2="130" y2="140" class="body-part hidden" />
+            <line id="h-arm-l" x1="130" y1="95" x2="100" y2="120" class="body-part hidden" />
+            <line id="h-arm-r" x1="130" y1="95" x2="160" y2="120" class="body-part hidden" />
+            <line id="h-leg-l" x1="130" y1="140" x2="105" y2="175" class="body-part hidden" />
+            <line id="h-leg-r" x1="130" y1="140" x2="155" y2="175" class="body-part hidden" />
+            <!-- Cara triste (solo cuando pierde) -->
+            <g id="h-face" class="hidden">
+              <line x1="123" y1="56" x2="127" y2="60" class="face-feature" />
+              <line x1="127" y1="56" x2="123" y2="60" class="face-feature" />
+              <line x1="133" y1="56" x2="137" y2="60" class="face-feature" />
+              <line x1="137" y1="56" x2="133" y2="60" class="face-feature" />
+              <path d="M 122 68 Q 130 63 138 68" class="face-feature" fill="none" />
+            </g>
+          </svg>
+        </div>
+
+        <div class="mistakes-display">
+          <div class="lives-label">Vidas restantes</div>
+          <div id="hearts-row"></div>
+        </div>
+      </div>
+
+      <!-- Panel derecho: juego -->
+      <div class="game-right">
+
+        <!-- Categoría e info -->
+        <div class="word-category" id="word-category-label"></div>
+
+        <!-- Hint -->
+        <div class="hint-box" id="hint-box">
+          <span class="hint-icon">💡</span>
+          <span id="hint-text"></span>
+        </div>
+
+        <!-- Palabra -->
+        <div class="word-display" id="word-display"></div>
+
+        <!-- Letras incorrectas -->
+        <div class="wrong-letters-section">
+          <span class="wrong-label">Letras incorrectas:</span>
+          <div id="wrong-letters"></div>
+        </div>
+
+        <!-- Comodines -->
+        <div class="jokers-section">
+          <span class="jokers-label">🃏 Comodines:</span>
+          <div class="jokers-row">
+            <button class="joker-btn" id="joker-reveal" title="Revelar una letra">
+              🔍 <span>Revelar</span>
+              <span class="joker-count" id="joker-reveal-count">2</span>
+            </button>
+            <button class="joker-btn" id="joker-eliminate" title="Eliminar 3 letras incorrectas del teclado">
+              ✂️ <span>Eliminar</span>
+              <span class="joker-count" id="joker-eliminate-count">1</span>
+            </button>
+            <button class="joker-btn" id="joker-hint" title="Mostrar pista">
+              💬 <span>Pista</span>
+              <span class="joker-count" id="joker-hint-count">1</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Teclado virtual -->
+        <div class="keyboard" id="keyboard"></div>
+
+        <!-- Acciones -->
+        <div class="game-actions">
+          <button class="btn btn-sm btn-ghost" id="btn-give-up">🏳️ Rendirse</button>
+          <button class="btn btn-sm btn-ghost" id="btn-menu">🏠 Menú</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== PANTALLA: RESULTADO ===================== -->
+  <div id="screen-result" class="screen">
+    <div class="result-card">
+      <div id="result-emoji" class="result-emoji"></div>
+      <h2 id="result-title"></h2>
+      <div class="result-word-reveal">
+        <span class="reveal-label">La palabra era:</span>
+        <span id="result-word" class="reveal-word"></span>
+      </div>
+      <div class="result-stats">
+        <div class="rstat">
+          <span class="rstat-icon">⭐</span>
+          <span class="rstat-label">Puntos</span>
+          <span class="rstat-val" id="r-points"></span>
+        </div>
+        <div class="rstat">
+          <span class="rstat-icon">❌</span>
+          <span class="rstat-label">Errores</span>
+          <span class="rstat-val" id="r-errors"></span>
+        </div>
+        <div class="rstat">
+          <span class="rstat-icon">⏱️</span>
+          <span class="rstat-label">Tiempo</span>
+          <span class="rstat-val" id="r-time"></span>
+        </div>
+        <div class="rstat">
+          <span class="rstat-icon">🎯</span>
+          <span class="rstat-label">Nivel</span>
+          <span class="rstat-val" id="r-level"></span>
+        </div>
+      </div>
+      <div class="result-actions">
+        <button class="btn btn-primary" id="btn-play-again">🔄 Jugar de nuevo</button>
+        <button class="btn btn-secondary" id="btn-download-result">📥 Descargar resultado</button>
+        <button class="btn btn-ghost" id="btn-result-menu">🏠 Menú</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== PANTALLA: HISTORIAL ===================== -->
+  <div id="screen-scores" class="screen">
+    <div class="scores-card">
+      <h2>🏆 Mejores Jugadores</h2>
+      <div class="scores-filters">
+        <button class="btn btn-sm btn-level active" data-filter="all">Todos</button>
+        <button class="btn btn-sm btn-level" data-filter="easy">🟢 Fácil</button>
+        <button class="btn btn-sm btn-level" data-filter="medium">🟡 Medio</button>
+        <button class="btn btn-sm btn-level" data-filter="hard">🔴 Difícil</button>
+      </div>
+      <div class="scores-table-wrap">
+        <table class="scores-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Jugador</th>
+              <th>Palabra</th>
+              <th>Nivel</th>
+              <th>Puntos</th>
+              <th>Errores</th>
+              <th>Tiempo</th>
+            </tr>
+          </thead>
+          <tbody id="scores-tbody"></tbody>
+        </table>
+        <p id="scores-empty" class="scores-empty">Aún no hay partidas registradas.</p>
+      </div>
+      <div class="scores-actions">
+        <button class="btn btn-secondary" id="btn-download-scores">📥 Descargar historial</button>
+        <button class="btn btn-ghost" id="btn-scores-back">← Volver</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== PANTALLA: VS RESULTADO MÁQUINA ===================== -->
+  <div id="screen-vs-result" class="screen">
+    <div class="result-card">
+      <div id="vs-result-emoji" class="result-emoji"></div>
+      <h2 id="vs-result-title"></h2>
+      <div class="result-word-reveal">
+        <span class="reveal-label">La palabra era:</span>
+        <span id="vs-result-word" class="reveal-word"></span>
+      </div>
+      <div class="result-stats">
+        <div class="rstat">
+          <span class="rstat-icon">🤔</span>
+          <span class="rstat-label">Intentos</span>
+          <span class="rstat-val" id="vs-r-attempts"></span>
+        </div>
+        <div class="rstat">
+          <span class="rstat-icon">❌</span>
+          <span class="rstat-label">Errores</span>
+          <span class="rstat-val" id="vs-r-errors"></span>
+        </div>
+        <div class="rstat">
+          <span class="rstat-icon">⏱️</span>
+          <span class="rstat-label">Tiempo</span>
+          <span class="rstat-val" id="vs-r-time"></span>
+        </div>
+      </div>
+      <div class="result-actions">
+        <button class="btn btn-primary" id="btn-vs-play-again">🔄 Jugar de nuevo</button>
+        <button class="btn btn-ghost" id="btn-vs-result-menu">🏠 Menú</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== MODAL: AYUDA ===================== -->
+  <div id="modal-help" class="modal-overlay hidden">
+    <div class="modal-card">
+      <h3>❓ Cómo Jugar</h3>
+      <ul class="help-list">
+        <li>🔤 Adivina la palabra letra por letra antes de agotar tus vidas.</li>
+        <li>❤️ Tienes <strong>6 vidas</strong>. Cada letra incorrecta te resta una.</li>
+        <li>🔍 <strong>Comodín Revelar:</strong> Descubre una letra oculta aleatoria.</li>
+        <li>✂️ <strong>Comodín Eliminar:</strong> Quita 3 letras incorrectas del teclado.</li>
+        <li>💬 <strong>Comodín Pista:</strong> Muestra una pista sobre la palabra.</li>
+        <li>⭐ <strong>Puntos:</strong> Ganas más puntos en niveles difíciles y con menos errores.</li>
+        <li>📥 Puedes descargar tu resultado al terminar cada partida.</li>
+      </ul>
+      <button class="btn btn-primary" id="btn-close-help">Entendido ✅</button>
+    </div>
+  </div>
+
+  <!-- Botón de ayuda flotante -->
+  <button id="btn-help-float" class="help-float" title="Ayuda">❓</button>
+
+  <script src="words.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
